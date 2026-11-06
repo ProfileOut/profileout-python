@@ -10,8 +10,6 @@ Requires Python 3.10 or newer. No runtime dependencies.
 pip install profileout
 ```
 
-The installation command above becomes available after the first PyPI publication. Until then, install a local checkout with `pip install /path/to/profileout-python`.
-
 ## Quick start
 
 Get an API key from the [ProfileOut console](https://console.profileout.com). The account must be active and email-verified, with sufficient credits.
@@ -113,34 +111,33 @@ The optional `base_url` defaults to `https://api.profileout.com`. HTTPS is requi
 
 ## Publishing to PyPI (maintainers)
 
-Distribution and import name: `profileout`. Initial version: `0.1.0`. This repository is ready to package, but no registry account or project is created by cloning it.
+Publishing is automated by [`.github/workflows/publish.yml`](.github/workflows/publish.yml). A published, non-prerelease GitHub Release builds and checks the distributions, then a separate job publishes them to PyPI using Trusted Publishing (OIDC). No PyPI API token is needed in GitHub Actions.
 
-1. [Create a PyPI account](https://pypi.org/account/register/), verify your email, and configure two-factor authentication.
-2. Check whether [the project name](https://pypi.org/project/profileout/) is available. If another owner takes it, change `project.name` in `pyproject.toml` and installation examples; the Python import can remain `profileout`.
-3. Create a PyPI API token with upload access. For a first upload, the project does not yet exist; use an account-scoped token, then replace it with a project-scoped token after publication. Store it outside the repository, and never paste it into chat.
-4. From this repository, prepare build tools in a local virtual environment:
+### One-time setup
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install build twine
-python -m build --outdir dist/0.1.0
-python -m twine check dist/0.1.0/*
-```
+1. Push the workflow to `ProfileOut/profileout-python`.
+2. In the repository's **Settings → Environments**, create an environment named `pypi`. Leave required reviewers unset for automatic publishing; adding reviewers makes each release wait for approval.
+3. On [PyPI](https://pypi.org/project/profileout/), open **Manage → Publishing**, add a **GitHub** trusted publisher to the existing `profileout` project, and enter:
 
-The standard build command installs the declared setuptools backend in an isolated build environment. Runtime installation of the SDK has no third-party dependencies.
+| Setting | Value |
+| --- | --- |
+| Owner | `ProfileOut` |
+| Repository name | `profileout-python` |
+| Workflow name | `publish.yml` |
+| Environment name | `pypi` |
 
-5. Upload the verified wheel and source distribution:
+Use the workflow filename, not its display name or directory path. No GitHub Actions secret is required. See the [official PyPI Trusted Publishing guide](https://docs.pypi.org/trusted-publishers/adding-a-publisher/).
 
-```sh
-python -m twine upload --repository-url https://upload.pypi.org/legacy/ dist/0.1.0/*
-```
+### Publish a release
 
-When prompted for an API token, paste your token including its `pypi-` prefix. If your Twine version asks for a username and password, use `__token__` as the username and your API token as the password. Uploading creates the project on the first successful publication. Build tools may also obtain credentials through the system keyring.
+1. Change `project.version` in `pyproject.toml` to an unused stable version, for example `0.1.1`.
+2. Commit and push the version, code, README, and workflow changes.
+3. In this repository's **Releases → Draft a new release**, create the matching tag, for example `v0.1.1`, on that commit. Leave **Set as a pre-release** unchecked, then click **Publish release**.
+4. Check the **Publish to PyPI** workflow in Actions and confirm the version on [PyPI](https://pypi.org/project/profileout/).
 
-Confirm the release at [PyPI](https://pypi.org/project/profileout/). For each later release, change the version in `pyproject.toml` and use a matching, new output directory; do not upload old artifacts. A published name/version cannot be reused. The files that are published become public.
+The workflow requires an exact `vMAJOR.MINOR.PATCH` tag matching `pyproject.toml`. On a GitHub-hosted Ubuntu runner with Python 3.12, it installs build tools, builds a wheel and source distribution, checks their metadata with Twine, and imports the installed wheel. Build tools and the declared setuptools backend are installed only in CI; the SDK still supports Python 3.10+ with no runtime dependencies. Only the separate publishing job receives OIDC permission.
 
-See the [official Python packaging guide](https://packaging.python.org/en/latest/tutorials/packaging-projects/).
+A push or tag push alone does not publish. Draft releases and prereleases do not publish. Publishing a release does not bump the package version automatically. Published files cannot be overwritten; README updates also need a new package version. If authentication fails before upload, finish Trusted Publishing setup and rerun the failed publishing job. If only some distribution files uploaded, inspect the PyPI release before retrying; duplicate uploads fail.
 
 ## API compatibility
 
