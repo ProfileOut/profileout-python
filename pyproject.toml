@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "profileout"
+version = "0.1.0"
+description = "Official Python SDK for the ProfileOut API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "ProfileOut"}]
+keywords = ["profileout", "sdk", "people-data", "resume-parsing", "contact-enrichment"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://docs.profileout.com"
+Documentation = "https://docs.profileout.com"
+Repository = "https://github.com/ProfileOut/profileout-python"
+Issues = "https://github.com/ProfileOut/profileout-python/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+profileout = ["py.typed"]
