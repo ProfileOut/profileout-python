@@ -109,36 +109,6 @@ HTTP failures and invalid response objects raise `ProfileOutError`. Network erro
 
 The optional `base_url` defaults to `https://api.profileout.com`. HTTPS is required except on localhost; redirects are rejected so credentials and paid requests cannot be forwarded.
 
-## Publishing to PyPI (maintainers)
-
-Publishing is automated by [`.github/workflows/publish.yml`](.github/workflows/publish.yml). A published, non-prerelease GitHub Release builds and checks the distributions, then a separate job publishes them to PyPI using Trusted Publishing (OIDC). No PyPI API token is needed in GitHub Actions.
-
-### One-time setup
-
-1. Push the workflow to `ProfileOut/profileout-python`.
-2. In the repository's **Settings → Environments**, create an environment named `pypi`. Leave required reviewers unset for automatic publishing; adding reviewers makes each release wait for approval.
-3. On [PyPI](https://pypi.org/project/profileout/), open **Manage → Publishing**, add a **GitHub** trusted publisher to the existing `profileout` project, and enter:
-
-| Setting | Value |
-| --- | --- |
-| Owner | `ProfileOut` |
-| Repository name | `profileout-python` |
-| Workflow name | `publish.yml` |
-| Environment name | `pypi` |
-
-Use the workflow filename, not its display name or directory path. No GitHub Actions secret is required. See the [official PyPI Trusted Publishing guide](https://docs.pypi.org/trusted-publishers/adding-a-publisher/).
-
-### Publish a release
-
-1. Change `project.version` in `pyproject.toml` to an unused stable version, for example `0.1.1`.
-2. Commit and push the version, code, README, and workflow changes.
-3. In this repository's **Releases → Draft a new release**, create the matching tag, for example `v0.1.1`, on that commit. Leave **Set as a pre-release** unchecked, then click **Publish release**.
-4. Check the **Publish to PyPI** workflow in Actions and confirm the version on [PyPI](https://pypi.org/project/profileout/).
-
-The workflow requires an exact `vMAJOR.MINOR.PATCH` tag matching `pyproject.toml`. On a GitHub-hosted Ubuntu runner with Python 3.12, it installs build tools, builds a wheel and source distribution, checks their metadata with Twine, and imports the installed wheel. Build tools and the declared setuptools backend are installed only in CI; the SDK still supports Python 3.10+ with no runtime dependencies. Only the separate publishing job receives OIDC permission.
-
-A push or tag push alone does not publish. Draft releases and prereleases do not publish. Publishing a release does not bump the package version automatically. Published files cannot be overwritten; README updates also need a new package version. If authentication fails before upload, finish Trusted Publishing setup and rerun the failed publishing job. If only some distribution files uploaded, inspect the PyPI release before retrying; duplicate uploads fail.
-
 ## API compatibility
 
 Targets the ProfileOut v1 public API. When that contract changes, review both SDKs against the service's OpenAPI specification and update methods and examples together.
